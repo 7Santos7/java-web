@@ -1,0 +1,22 @@
+final ListenableFuture<JavaScriptSandbox> sandbox
+       = JavaScriptSandbox.createConnectedInstanceAsync(this);
+final ListenableFuture<JavaScriptIsolate> isolate
+       = Futures.transform(sandbox,
+               input -> (jsSandBox = input).createIsolate(),
+               executor);
+final ListenableFuture<String> js
+       = Futures.transformAsync(isolate,
+               isolate -> (jsIsolate = isolate).evaluateJavaScriptAsync("'PASS OK'"),
+               executor);
+Futures.addCallback(js,
+       new FutureCallback<String>() {
+           @Override
+           public void onSuccess(String result) {
+               text.append(result);
+           }
+           @Override
+           public void onFailure(Throwable t) {
+               text.append(t.getMessage());
+           }
+       },
+       mainThreadExecutor);
